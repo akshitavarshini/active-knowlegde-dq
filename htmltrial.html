@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcaDeBot</title>
+    <style>
+        body {
+            font-family: "Times New Roman", serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        textarea {
+            width: 500px;
+            height: 200px;
+            font-size: 16px;
+            margin-top: 20px;
+            padding: 10px;
+        }
+        button {
+            font-size: 16px;
+            margin: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        #pdf-name {
+            margin-top: 10px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>AcaDeBot</h1>
+
+    <!-- Textbox for article -->
+    <textarea id="article" placeholder="Paste your article here..."></textarea>
+    <br>
+
+    <!-- PDF upload -->
+    <input type="file" id="pdf-upload" accept=".pdf">
+    <div id="pdf-name"></div>
+
+    <!-- Generate Debate button -->
+    <br>
+    <button id="generate-btn">Generate Debate</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.102/pdf.min.js"></script>
+    <script>
+        const pdfUpload = document.getElementById("pdf-upload");
+        const textarea = document.getElementById("article");
+        const pdfName = document.getElementById("pdf-name");
+
+        pdfUpload.addEventListener("change", async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                pdfName.textContent = `Uploaded: ${file.name}`;
+
+                const fileReader = new FileReader();
+                fileReader.onload = async function() {
+                    const typedarray = new Uint8Array(this.result);
+                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    let textContent = "";
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const text = await page.getTextContent();
+                        text.items.forEach(item => {
+                            textContent += item.str + " ";
+                        });
+                        textContent += "\n\n";
+                    }
+                    textarea.value = textContent;
+                };
+                fileReader.readAsArrayBuffer(file);
+            }
+        });
+
+        document.getElementById("generate-btn").addEventListener("click", () => {
+            alert("This will trigger debate generation!");
+            // Later: Call backend API or AI logic here
+        });
+    </script>
+
+</body>
+</html>
+
